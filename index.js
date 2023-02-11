@@ -45,12 +45,6 @@ io.on('connection', (socket) => {
     io.emit('buzzes', [...data.buzzes])
     console.log(`Clear buzzes`)
   })
-  
-  socket.on('reset', () => {
-    data.users = new Set()
-	io.emit('active', [...data.users].length)
-    console.log(`Reset players`)
-  })
 })
 
 server.listen(8090, () => console.log('Listening on 8090'))
