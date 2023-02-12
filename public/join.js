@@ -4,7 +4,7 @@ const form = document.querySelector('.js-join')
 const joined = document.querySelector('.js-joined')
 const buzzer = document.querySelector('.js-buzzer')
 const joinedInfo = document.querySelector('.js-joined-info')
-const editInfo = document.querySelector('.js-edit')
+// const editInfo = document.querySelector('.js-edit')
 
 let user = {}
 
@@ -23,25 +23,28 @@ form.addEventListener('submit', (e) => {
   e.preventDefault()
   user.name = form.querySelector('[name=name]').value
   user.team = form.querySelector('[name=team]').value
-  if (!user.id) {
-    user.id = Math.floor(Math.random() * new Date())
+  if (user.name && user.team) {
+    if (!user.id) {
+      user.id = Math.floor(Math.random() * new Date())
+    }
+    socket.emit('join', user)
+    saveUserInfo()
+    joinedInfo.innerText = `${user.name} on Team ${user.team}`
+    form.classList.add('hidden')
+    joined.classList.remove('hidden')
+    body.classList.add('buzzer-mode')
   }
-  socket.emit('join', user)
-  saveUserInfo()
-  joinedInfo.innerText = `${user.name} on Team ${user.team}`
-  form.classList.add('hidden')
-  joined.classList.remove('hidden')
-  body.classList.add('buzzer-mode')
 })
 
 buzzer.addEventListener('click', (e) => {
   socket.emit('buzz', user)
 })
 
-editInfo.addEventListener('click', () => {
-  joined.classList.add('hidden')
-  form.classList.remove('hidden')
-  body.classList.remove('buzzer-mode')
-})
+// editInfo.addEventListener('click', () => {
+//   joined.classList.add('hidden')
+//   form.classList.remove('hidden')
+//   body.classList.remove('buzzer-mode')
+//   // socket.emit('remove', user)
+// })
 
 getUserInfo()

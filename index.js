@@ -31,19 +31,44 @@ io.on('connection', (socket) => {
   socket.on('join', (user) => {
     data.users.add(user.id)
     io.emit('active', [...data.users].length)
+    socket.emit('active', [...data.users].length)
     console.log(`${user.name} joined!`)
   })
 
+  socket.on('remove', (user) => {
+    data.users.delete(user.id)
+    io.emit('active', [...data.users].length)
+    console.log(`${user.name} left.`)
+  })
+
   socket.on('buzz', (user) => {
-    data.buzzes.add(`${user.name}-${user.team}`)
-    io.emit('buzzes', [...data.buzzes])
-    console.log(`${user.name} buzzed in!`)
+    if (data.users.has(user.id)) {
+      if (data.buzzes.has(`${user.name}-${user.team}`)) {
+        console.log(`${user.name} already buzzed in!`)
+      } else {
+        data.buzzes.add(`${user.name}-${user.team}`)
+        io.emit('buzzes', [...data.buzzes])
+        console.log(`${user.name} buzzed in!`)
+      }
+    } else {
+      console.log(`Old user '${user.name}' buzzed in! (not counted)`)
+    }
   })
 
   socket.on('clear', () => {
-    data.buzzes = new Set()
+    data.buzzes.clear()
     io.emit('buzzes', [...data.buzzes])
     console.log(`Clear buzzes`)
+  })
+
+  socket.on('reset', () => {
+    data.users.clear()
+    data.buzzes.clear()
+    console.log([...data.users].length)
+    io.emit('active', [...data.users].length)
+    // socket.emit('active', [...data.users].length)
+    io.emit('buzzes', [...data.buzzes])
+    console.log(`Reset game`)
   })
 })
 

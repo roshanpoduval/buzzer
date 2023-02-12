@@ -2,6 +2,7 @@ const socket = io()
 const active = document.querySelector('.js-active')
 const buzzList = document.querySelector('.js-buzzes')
 const clear = document.querySelector('.js-clear')
+const reset = document.querySelector('.js-reset')
 
 socket.on('active', (numberActive) => {
   active.innerText = `${numberActive} joined`
@@ -21,3 +22,6 @@ clear.addEventListener('click', () => {
   socket.emit('clear')
 })
 
+reset.addEventListener('click', () => {
+  socket.emit('reset')
+})
