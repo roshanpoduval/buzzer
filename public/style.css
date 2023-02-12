@@ -133,11 +133,20 @@ button:focus {
   background-color: #e97284;
 }
 
-.secondary {
+.buzzer-not-ready-mode {
+  color: rgb(18, 30, 102);
+  background-color: rgb(243, 175, 185);
+}
+.buzzer-ready-mode {
+  color: rgb(18, 30, 102);
+  background-color: rgb(175, 243, 181);
+}
+
+/* .secondary {
   background-color: #fff;
   color: rgb(16, 21, 78);
 }
 
 .secondary:hover {
   background-color: rgb(44, 75, 255);
-}
+} */

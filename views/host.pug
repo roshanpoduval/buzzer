@@ -13,6 +13,8 @@ html
       ol.js-buzzes
         each buzz in buzzes
           li=`${buzz.name} on Team ${buzz.team}`
+      button.js-activate='Activate buzzer'
+      button.js-deactivate='Deactivate buzzer'
       button.js-clear='Clear buzzes'
       button.js-reset.secondary='Reset game'
 

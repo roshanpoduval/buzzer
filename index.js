@@ -13,6 +13,8 @@ let data = {
   buzzes: new Set(),
 }
 
+let buzz_active = false
+
 const getData = () => ({
   users: [...data.users],
   buzzes: [...data.buzzes].map(b => {
@@ -32,33 +34,37 @@ io.on('connection', (socket) => {
     data.users.add(user.id)
     io.emit('active', [...data.users].length)
     socket.emit('active', [...data.users].length)
-    console.log(`${user.name} joined!`)
+    console.log(`Log: ${user.name} joined!`)
   })
 
   socket.on('remove', (user) => {
     data.users.delete(user.id)
     io.emit('active', [...data.users].length)
-    console.log(`${user.name} left.`)
+    console.log(`Log: ${user.name} left.`)
   })
 
   socket.on('buzz', (user) => {
-    if (data.users.has(user.id)) {
-      if (data.buzzes.has(`${user.name}-${user.team}`)) {
-        console.log(`${user.name} already buzzed in!`)
+    if (buzz_active) {
+      if (data.users.has(user.id)) {
+        if (data.buzzes.has(`${user.name}-${user.team}`)) {
+          console.log(`Log: ${user.name} already buzzed in!`)
+        } else {
+          data.buzzes.add(`${user.name}-${user.team}`)
+          io.emit('buzzes', [...data.buzzes])
+          console.log(`Log: ${user.name} buzzed in!`)
+        }
       } else {
-        data.buzzes.add(`${user.name}-${user.team}`)
-        io.emit('buzzes', [...data.buzzes])
-        console.log(`${user.name} buzzed in!`)
+        console.log(`Log: Old user '${user.name}' buzzed in! (not counted)`)
       }
     } else {
-      console.log(`Old user '${user.name}' buzzed in! (not counted)`)
+      console.log(`Log: ${user.name} is buzzing when deactivated.`)
     }
   })
 
   socket.on('clear', () => {
     data.buzzes.clear()
     io.emit('buzzes', [...data.buzzes])
-    console.log(`Clear buzzes`)
+    console.log(`Log: Clear buzzes`)
   })
 
   socket.on('reset', () => {
@@ -66,10 +72,19 @@ io.on('connection', (socket) => {
     data.buzzes.clear()
     console.log([...data.users].length)
     io.emit('active', [...data.users].length)
-    // socket.emit('active', [...data.users].length)
     io.emit('buzzes', [...data.buzzes])
-    console.log(`Reset game`)
+    console.log(`Log: Reset game`)
   })
+
+  socket.on('activate', () => {
+    // console.log(`Debug: Activate buzzer from host ${socket.id}`)
+    buzz_active = true
+  });
+
+  socket.on('deactivate', () => {
+    // console.log(`Debug: Deactivate buzzer from host ${socket.id}`)
+    buzz_active = false
+  });
 })
 
 server.listen(8090, () => console.log('Listening on 8090'))
