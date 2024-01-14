@@ -20,7 +20,7 @@ else
 fi
 
 echo Building - ${img_nm}
-docker build -t ${img_nm}:${img_vrs} .
+docker build --no-cache -t ${img_nm}:${img_vrs} .
 
 for (( i=1;i<$ELEMENTS;i++)); do
 	if [ $# -gt 2 ];

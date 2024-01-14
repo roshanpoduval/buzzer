@@ -57,7 +57,7 @@ io.on('connection', (socket) => {
         if (data.buzzes.has(`${user.name}-${user.team}`)) {
           if (do_logging) { console.log(`Log: ${user.name} already buzzed in!`) }
         } else {
-          buzz_active = False
+          buzz_active = false
           data.buzzes.add(`${user.name}-${user.team}-${user.id}`)
           io.emit('buzzes', [...data.buzzes])
           socket.broadcast.emit('tivate', 'deac', user)

@@ -13,4 +13,4 @@ ENV HOST 0.0.0.0
 ENV PORT 8090
 EXPOSE 8090
 
-CMD ["node", "./index.js"]
+CMD ["nohup", "node", "./index.js"]
