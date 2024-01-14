@@ -6,7 +6,10 @@ const buzzer = document.querySelector('.js-buzzer')
 const joinedInfo = document.querySelector('.js-joined-info')
 // const editInfo = document.querySelector('.js-edit')
 
+const do_logging = false
+
 let user = {}
+let buzz_active = false
 
 const getUserInfo = () => {
   user = JSON.parse(localStorage.getItem('user')) || {}
@@ -36,8 +39,28 @@ form.addEventListener('submit', (e) => {
   }
 })
 
-buzzer.addEventListener('click', (e) => {
-  socket.emit('buzz', user)
+buzzer.addEventListener('click', () => {
+  if (buzz_active) {
+    socket.emit('buzz', user) // only index needs to see the user buzz... for now
+    buzzer.style.backgroundColor='yellow'
+  }
+})
+
+socket.on('tivate', (tivate, usr) => {
+  if (do_logging) { console.log(`Log: ${tivate}tivate ${usr.id} (this - ${user.id})`) }
+  if (tivate == 'ac') {
+    if (usr.id == 'all' || usr.id != user.id) {
+      buzz_active = true
+      buzzer.style.backgroundColor='greenyellow'
+      if (do_logging) { console.log(`Log: ${tivate}tivated != ${(usr.id != user.id)}`) }
+    }
+  } else {
+    if (usr.id == 'all' || usr.id == user.id) {
+      buzz_active = false
+      buzzer.style.backgroundColor='lightcoral'
+      if (do_logging) { console.log(`Log: ${tivate}tivated == ${(usr.id == user.id)}`) }
+    }
+  }
 })
 
 // editInfo.addEventListener('click', () => {

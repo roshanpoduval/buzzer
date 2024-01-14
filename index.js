@@ -8,18 +8,21 @@ const io = socketio(server);
 
 const title = 'Buffer Buzzer'
 
+const all_dict = {id: 'all'}
+
 let data = {
   users: new Set(),
   buzzes: new Set(),
 }
 
 let buzz_active = false
+const do_logging = false
 
 const getData = () => ({
   users: [...data.users],
   buzzes: [...data.buzzes].map(b => {
-    const [ name, team ] = b.split('-')
-    return { name, team }
+    const [ name, team , id] = b.split('-')
+    return { name, team , id}
   })
 })
 
@@ -33,58 +36,96 @@ io.on('connection', (socket) => {
   socket.on('join', (user) => {
     data.users.add(user.id)
     io.emit('active', [...data.users].length)
+    if (buzz_active) {
+      // socket.broadcast.emit('activate', all_dict)
+    } else {
+      socket.broadcast.emit('tivate', 'deac', user)
+    }
     socket.emit('active', [...data.users].length)
-    console.log(`Log: ${user.name} joined!`)
+    if (do_logging) { console.log(`Log: ${user.name} joined!`) }
   })
 
   socket.on('remove', (user) => {
     data.users.delete(user.id)
     io.emit('active', [...data.users].length)
-    console.log(`Log: ${user.name} left.`)
+    if (do_logging) { console.log(`Log: ${user.name} left.`) }
   })
 
   socket.on('buzz', (user) => {
     if (buzz_active) {
       if (data.users.has(user.id)) {
         if (data.buzzes.has(`${user.name}-${user.team}`)) {
-          console.log(`Log: ${user.name} already buzzed in!`)
+          if (do_logging) { console.log(`Log: ${user.name} already buzzed in!`) }
         } else {
-          data.buzzes.add(`${user.name}-${user.team}`)
+          buzz_active = False
+          data.buzzes.add(`${user.name}-${user.team}-${user.id}`)
           io.emit('buzzes', [...data.buzzes])
-          console.log(`Log: ${user.name} buzzed in!`)
+          socket.broadcast.emit('tivate', 'deac', user)
+          // should allow only one user to buzz in at a time
+          // if they answer wrong, the buzzers can be reactivated
+          // for one more buzz
+          socket.broadcast.emit('tivate', 'deac', all_dict)
+          if (do_logging) { console.log(`Log: ${user.name} buzzed in!`) }
         }
       } else {
-        console.log(`Log: Old user '${user.name}' buzzed in! (not counted)`)
+        if (do_logging) { console.log(`Log: Old user '${user.name}' buzzed in! (not counted)`) }
       }
     } else {
-      console.log(`Log: ${user.name} is buzzing when deactivated.`)
+      if (do_logging) { console.log(`Log: ${user.name} is buzzing when deactivated.`) }
     }
   })
 
   socket.on('clear', () => {
+    const cnt = data.buzzes.size
+    if (cnt > 0) {
+      const p = [...data.buzzes][(cnt-1)].split('-')
+      let last = {name: p[0], team: p[1], id: p[2]}
+      io.emit('correct', [...data.users].length, last)
+    }
     data.buzzes.clear()
     io.emit('buzzes', [...data.buzzes])
-    console.log(`Log: Clear buzzes`)
+    if (do_logging) { console.log(`Log: Clear buzzes`) }
   })
 
   socket.on('reset', () => {
     data.users.clear()
     data.buzzes.clear()
-    console.log([...data.users].length)
+    if (do_logging) { console.log([...data.users].length) }
     io.emit('active', [...data.users].length)
     io.emit('buzzes', [...data.buzzes])
-    console.log(`Log: Reset game`)
+    if (do_logging) { console.log(`Log: Reset game`) }
   })
 
-  socket.on('activate', () => {
-    // console.log(`Debug: Activate buzzer from host ${socket.id}`)
-    buzz_active = true
-  });
+  socket.on('tivate', (tivate, user) => {
+    if (do_logging) { console.log(`Log: ${tivate}tivate ${user.id}`) }
+    if (user) {
+      socket.broadcast.emit('tivate', tivate, user)
+      if (user.id == 'all') {
+        if (tivate == 'ac') {
+          buzz_active = true
+          io.emit('active', [...data.users].length)
+        } else {
+          buzz_active = false
+        }
+      }
+    }
+  })
 
-  socket.on('deactivate', () => {
-    // console.log(`Debug: Deactivate buzzer from host ${socket.id}`)
-    buzz_active = false
-  });
+  socket.on('incorrect', () => {
+    const cnt = data.buzzes.size
+    if (cnt > 0) {
+      for (let step = 0; step < cnt; step++) {
+        // const p = data.buzzes.values().next().value.split('-')
+        const p = [...data.buzzes][step].split('-')
+        let first = {name: p[0], team: p[1], id: p[2]}
+        if (do_logging) { console.log(`Log: Incorrect (${cnt}) ${first.id} (${first.name}-${first.team}-${first.id})`) }
+        socket.broadcast.emit('tivate', 'deac', first)
+        // socket.broadcast.emit('tivate', 'deac', all_dict)
+        socket.broadcast.emit('tivate', 'ac', first)
+      }
+    }
+  })
+
 })
 
 server.listen(8090, () => console.log('Listening on 8090'))

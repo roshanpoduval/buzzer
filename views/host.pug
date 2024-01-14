@@ -13,9 +13,10 @@ html
       ol.js-buzzes
         each buzz in buzzes
           li=`${buzz.name} on Team ${buzz.team}`
-      button.js-activate='Activate buzzer'
-      button.js-deactivate='Deactivate buzzer'
-      button.js-clear='Clear buzzes'
+      button.js-activate='Activate buzzers'
+      button.js-incorrect='Incorrect Answer!'
+      button.js-clear='Correct Answer!\n(clear buzzes)'
+      button.js-deactivate='Deactivate buzzers'
       button.js-reset.secondary='Reset game'
 
     script(src='/socket.io/socket.io.js')

@@ -130,16 +130,7 @@ button:focus {
 }
 .buzzer:hover,
 .buzzer:active {
-  background-color: #e97284;
-}
-
-.buzzer-not-ready-mode {
-  color: rgb(18, 30, 102);
-  background-color: rgb(243, 175, 185);
-}
-.buzzer-ready-mode {
-  color: rgb(18, 30, 102);
-  background-color: rgb(175, 243, 181);
+  background-color: #ffffff;
 }
 
 /* .secondary {

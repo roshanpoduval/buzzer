@@ -1,0 +1,36 @@
+stages:
+  - build
+  - tag-push
+  - deploy
+
+docker-build-job:
+  stage: build
+  script:
+    - echo "Building - buzzer"
+    - docker build -t buzzer .
+
+docker-tag-push-job:
+  stage: tag-push
+  script:
+    - echo "Tagging - buzzer:latest"
+    - docker tag buzzer us-central1-docker.pkg.dev/buzzer-app-377518/rjp-cr/buzzer:latest
+    - docker push us-central1-docker.pkg.dev/buzzer-app-377518/rjp-cr/buzzer:latest
+
+gcloud-deploy-job:
+  stage: deploy
+  script:
+    - gcloud run deploy buzzer-app \
+	    --image=us-central1-docker.pkg.dev/buzzer-app-377518/rjp-cr/${img_nm}:${img_vrs} \
+	    --allow-unauthenticated \
+	    --region=us-central1 \
+	    --project=buzzer-app-377518 \
+	    --port=8090 \
+	    --cpu=1 \
+	    --min-instances=1 \
+	    --max-instances=5 \
+	    --concurrency=25 \
+	    --platform=managed
+    - gcloud run services update-traffic buzzer-app \
+	    --to-latest \
+	    --platform=managed \
+	    --region=us-central1

@@ -9,6 +9,8 @@ COPY package.json /usr/src/app/
 RUN npm install
 COPY . /usr/src/app
 
+ENV HOST 0.0.0.0
+ENV PORT 8090
 EXPOSE 8090
 
 CMD ["node", "./index.js"]

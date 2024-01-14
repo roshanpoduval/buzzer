@@ -1,5 +1,5 @@
 node_modules
-build_and_cloud_run.sh
+# build_and_cloud_run.sh
 deploy_cloud_run.sh
 tag_and_cloud_run.sh
 package-lock.json
