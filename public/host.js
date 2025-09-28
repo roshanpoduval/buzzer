@@ -7,6 +7,7 @@ const deactivate = document.querySelector('.js-deactivate')
 const clear = document.querySelector('.js-clear')
 const reset = document.querySelector('.js-reset')
 const buzzer = document.querySelector('.js-buzzer')
+const syncClocks = document.querySelector('.js-sync-clocks')
 
 const do_logging = false
 const all_dict = {id: 'all'}
@@ -48,4 +49,8 @@ incorrect.addEventListener('click', () => {
 
 deactivate.addEventListener('click', () => {
   socket.emit('tivate', 'deac', all_dict)
+})
+
+syncClocks.addEventListener('click', () => {
+  socket.emit('request-clients-to-sync')
 })

@@ -96,16 +96,42 @@ io.on('connection', (socket) => {
     if (do_logging) { console.log(`Log: Reset game`) }
   })
 
+  socket.on('request-clients-to-sync', () => {
+    io.emit('please-sync-now');
+    if (do_logging) { console.log('Log: Host initiated a clock sync.'); }
+  });
+
+  socket.on('time-ping', (payload) => {
+    socket.emit('time-pong', {
+      t0: payload.t0,
+      serverTime: Date.now()
+    });
+  });
+
   socket.on('tivate', (tivate, user) => {
     if (do_logging) { console.log(`Log: ${tivate}tivate ${user.id}`) }
-    if (user) {
-      socket.broadcast.emit('tivate', tivate, user)
-      if (user.id == 'all') {
-        if (tivate == 'ac') {
-          buzz_active = true
-          io.emit('active', [...data.users].length)
-        } else {
-          buzz_active = false
+    if (!user) { return }
+
+    // NEW: Time-synchronized activation for 'all'
+    if (tivate === 'ac' && user.id === 'all') {
+      const buffer = 200; // ms
+      const activationTime = Date.now() + buffer;
+      const payload = { id: 'all', activationTime: activationTime };
+
+      io.emit('tivate', 'ac', payload);
+      io.emit('active', [...data.users].length);
+
+      // Server's state is also delayed
+      setTimeout(() => {
+        buzz_active = true;
+      }, buffer);
+    }
+    // OLD LOGIC (preserved for compatibility)
+    else {
+      socket.broadcast.emit('tivate', tivate, user);
+      if (user.id === 'all') {
+        if (tivate === 'deac') {
+          buzz_active = false;
         }
       }
     }
